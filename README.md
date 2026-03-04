@@ -92,11 +92,12 @@ cp .env.example .env
 # .envファイルを編集してAPIキーを設定
 ```
 
-| 環境変数 | サービス | 取得先 |
-|---------|---------|--------|
-| `ELEVENLABS_API_KEY` | ナレーション | https://elevenlabs.io |
-| `OPENAI_API_KEY` | 画像生成 | https://platform.openai.com |
-| `REPLICATE_API_TOKEN` | 画像生成（代替） | https://replicate.com |
+| 環境変数 | サービス | 取得先 | 料金 |
+|---------|---------|--------|------|
+| `GEMINI_API_KEY` | 画像生成（デフォルト） | https://aistudio.google.com/apikey | $0.03/枚 |
+| `ELEVENLABS_API_KEY` | ナレーション | https://elevenlabs.io | 無料枠あり |
+| `OPENAI_API_KEY` | 画像生成（代替） | https://platform.openai.com | $0.04/枚 |
+| `REPLICATE_API_TOKEN` | 画像生成（代替） | https://replicate.com | 従量課金 |
 
 ### 5. YouTube API認証（投稿する場合）
 
@@ -136,6 +137,19 @@ python main.py script.md --upload --privacy public
 python main.py script.md --voicevox
 ```
 
+### 画像生成エンジンを選択
+
+```bash
+# Gemini (Imagen 3) - デフォルト
+python main.py script.md --image-gen gemini
+
+# OpenAI (DALL-E 3)
+python main.py script.md --image-gen openai
+
+# Replicate (SDXL)
+python main.py script.md --image-gen replicate
+```
+
 ### オプション一覧
 
 ```bash
@@ -146,7 +160,7 @@ python main.py --help
 #   --upload, -u     YouTubeにアップロード
 #   --privacy, -p    公開設定（private/public/unlisted）
 #   --voicevox       VOICEVOXを使用（ElevenLabsの代わり）
-#   --replicate      Replicateを使用（OpenAIの代わり）
+#   --image-gen      画像生成エンジン（gemini/openai/replicate）
 #   --images, -i     生成する画像数（デフォルト: 10）
 #   --whisper-model  Whisperモデル（tiny/base/small/medium/large）
 ```

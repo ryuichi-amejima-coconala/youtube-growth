@@ -1,6 +1,6 @@
 """
 画像・動画素材生成モジュール
-Replicate API (SDXL, Runway) またはOpenAI (DALL-E 3) を使用
+Gemini (Imagen 3) / OpenAI (DALL-E 3) / Replicate (SDXL) を使用
 """
 
 import os
@@ -23,6 +23,56 @@ class VisualAsset:
     file_path: str
     prompt: str
     duration_seconds: Optional[float] = None
+
+
+class GeminiImageGenerator:
+    """Google Gemini (Imagen 3) を使用した画像生成"""
+
+    def __init__(self):
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        if not self.api_key:
+            raise ValueError("GEMINI_API_KEY が設定されていません")
+
+        from google import genai
+        self.client = genai.Client(api_key=self.api_key)
+        self.model_name = "imagen-3.0-generate-002"
+
+    def generate(self, prompt: str, output_path: str, style: str = "cinematic") -> str:
+        """画像を生成"""
+        from google.genai import types
+
+        # プロンプトを強化
+        enhanced_prompt = self._enhance_prompt(prompt, style)
+
+        result = self.client.models.generate_images(
+            model=self.model_name,
+            prompt=enhanced_prompt,
+            config=types.GenerateImagesConfig(
+                number_of_images=1,
+                aspect_ratio="16:9",  # YouTube向け
+                safety_filter_level="BLOCK_MEDIUM_AND_ABOVE",
+                person_generation="ALLOW_ADULT"
+            )
+        )
+
+        # 画像を保存
+        if result.generated_images and len(result.generated_images) > 0:
+            image = result.generated_images[0]
+            image.image.save(output_path)
+            return output_path
+
+        raise Exception("画像生成に失敗しました")
+
+    def _enhance_prompt(self, prompt: str, style: str) -> str:
+        """プロンプトを強化"""
+        style_suffixes = {
+            "cinematic": ", cinematic lighting, movie still, 8k, highly detailed, professional photography",
+            "tech": ", modern technology, sleek design, blue accent lighting, futuristic, clean",
+            "business": ", professional, corporate, clean background, modern office",
+            "artistic": ", artistic, creative, vibrant colors, digital art"
+        }
+        suffix = style_suffixes.get(style, style_suffixes["cinematic"])
+        return prompt + suffix
 
 
 class ReplicateImageGenerator:
@@ -196,7 +246,7 @@ def generate_visuals_for_script(
     script_content: str,
     output_dir: str,
     num_images: int = 10,
-    use_openai: bool = True
+    generator_type: str = "gemini"  # "gemini", "openai", "replicate"
 ) -> List[VisualAsset]:
     """台本に基づいて画像を生成"""
 
@@ -212,7 +262,9 @@ def generate_visuals_for_script(
     prompts = prompts[:num_images]
 
     # ジェネレーターを選択
-    if use_openai:
+    if generator_type == "gemini":
+        generator = GeminiImageGenerator()
+    elif generator_type == "openai":
         generator = OpenAIImageGenerator()
     else:
         generator = ReplicateImageGenerator()

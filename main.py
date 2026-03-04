@@ -43,14 +43,14 @@ class VideoPipeline:
         output_dir: str = "./output",
         temp_dir: str = "./temp",
         use_elevenlabs: bool = True,
-        use_openai_images: bool = True,
+        image_generator: str = "gemini",  # "gemini", "openai", "replicate"
         whisper_model: str = "base",
         num_images: int = 10
     ):
         self.output_dir = Path(output_dir)
         self.temp_dir = Path(temp_dir)
         self.use_elevenlabs = use_elevenlabs
-        self.use_openai_images = use_openai_images
+        self.image_generator = image_generator
         self.whisper_model = whisper_model
         self.num_images = num_images
 
@@ -123,7 +123,7 @@ class VideoPipeline:
                 script.raw_content,
                 str(visuals_dir),
                 num_images=self.num_images,
-                use_openai=self.use_openai_images
+                generator_type=self.image_generator
             )
 
             if not visual_assets:
@@ -267,13 +267,16 @@ def main():
     # VOICEVOXを使用（ElevenLabsの代わり）
     python main.py script.md --voicevox
 
-    # Replicateを使用（OpenAIの代わり）
-    python main.py script.md --replicate
+    # 画像生成エンジンを選択
+    python main.py script.md --image-gen gemini     # デフォルト
+    python main.py script.md --image-gen openai     # DALL-E 3
+    python main.py script.md --image-gen replicate  # SDXL
 
 環境変数:
+    GEMINI_API_KEY        - Google Gemini APIキー（画像生成デフォルト）
     ELEVENLABS_API_KEY    - ElevenLabs APIキー
-    OPENAI_API_KEY        - OpenAI APIキー
-    REPLICATE_API_TOKEN   - Replicate APIトークン
+    OPENAI_API_KEY        - OpenAI APIキー（DALL-E使用時）
+    REPLICATE_API_TOKEN   - Replicate APIトークン（SDXL使用時）
         """
     )
 
@@ -309,9 +312,10 @@ def main():
         help="VOICEVOXを使用（ElevenLabsの代わり）"
     )
     parser.add_argument(
-        "--replicate",
-        action="store_true",
-        help="Replicateを使用（OpenAIの代わり）"
+        "--image-gen",
+        choices=["gemini", "openai", "replicate"],
+        default="gemini",
+        help="画像生成エンジン（デフォルト: gemini）"
     )
     parser.add_argument(
         "--images", "-i",
@@ -338,7 +342,7 @@ def main():
         output_dir=args.output,
         temp_dir=args.temp,
         use_elevenlabs=not args.voicevox,
-        use_openai_images=not args.replicate,
+        image_generator=args.image_gen,
         whisper_model=args.whisper_model,
         num_images=args.images
     )
