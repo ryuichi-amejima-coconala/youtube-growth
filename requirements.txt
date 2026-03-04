@@ -1,0 +1,36 @@
+# YouTube動画自動化 - Python依存関係
+
+# API クライアント
+elevenlabs>=0.2.0
+replicate>=0.15.0
+openai>=1.0.0
+google-api-python-client>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# 動画処理
+moviepy>=1.0.3
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# 音声処理
+pydub>=0.25.1
+
+# ユーティリティ
+python-dotenv>=1.0.0
+requests>=2.28.0
+tqdm>=4.65.0
+pyyaml>=6.0
+
+# 字幕生成
+openai-whisper>=20231117
+
+# Markdown解析
+markdown>=3.4.0
+beautifulsoup4>=4.12.0
+
+# システム依存（pipではインストール不可）
+# FFmpeg - 動画合成に必須
+#   macOS: brew install ffmpeg
+#   Ubuntu: sudo apt install ffmpeg
+#   Windows: https://ffmpeg.org/download.html
